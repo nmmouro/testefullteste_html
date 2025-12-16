@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Painel - Frota (GViz)</title>
+
+<!-- evitar cache no GitHub Pages -->
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Expires" content="0" />
+
+<style>
+  :root{
+    --bg:#071029;
+    --card:#2a71e8;
+    --muted:#f7f9fa;
+    --accent:#00eaff;
+    --danger:#9b1111;
+  }
+ 
+  html,body{
+  height:100%;
+  margin:0;
+  background:var(--bg);
+  color:#fff;
+  font-family:Inter,Arial;
+  }
+  
+  header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:12px 20px;
+  background:#020617;
+  border-bottom:1px solid rgba(255,255,255,0.03);
+  }
+  
+  header img{height:66px}
+  header .title{font-size:20px;font-weight:700;color:var(--accent)}
+  header .clock{font-size:20px; color:var(--muted)}
+  
+  main{
+  padding:12px;
+  display:grid;
+  grid-template-rows:1fr 1fr 1fr;
+  gap:20px;
+  height:calc(100vh - 80px);
+  box-sizing:border-box;
+  }
+  
+  .card{
+  background:var(--card);
+  border-radius:10px;
+  padding:12px;
+  overflow:auto;
+  }
+  
+  .card h2{
+  margin:0 0 8px;
+  color:var(--accent);
+  font-size:18px;
+  text-align:center;
+  }
+  
+  table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:14px;
+  }
+
+  th, td{
+  padding: 10px 50px;
+  text-align:left;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  border-right: 1px solid rgba(255,255,255,0.12);
+  }
+  th:last-child,
+  td:last-child{
+  border-right: none;
+  width: 50px;
+  text-align: center;
+}
+
+  thead th{
+  position:sticky;
+  top:0;
+  background:rgba(255,255,255,0.02);
+  }
+  
+  /* ícone atendido */
+  td.status-icon{
+  text-align:center;
+  font-size:20px;
+  font-weight:bold;
+}
+
+tr.status-atendido   td.status-icon{color:#00ff9c;}
+tr.status-cancelado  td.status-icon{color:#ff4d4d;}
+tr.status-andamento  td.status-icon{color:#ffcc00;}
+tr.status-concluido  td.status-icon{color:#7CFC00;}
+
+
+  tr.status-andamento{background: rgba(219,147,112,0.18)}
+
+  tr.status-atendido{background: rgba(147,219,112,0.18)}
+  
+  tr.status-concluido{background: rgba(0,200,120,0.06)}
+     
+  .small{
+  font-size:12px;
+  color:var(--muted);
+  text-align:center;
+  margin-top:6px;
+  }
+ 
+  /* Cabeçalho azul padrão
+table thead th {
+  background: #0435bf;
+  color: white;
+}
+
+      /* larguras padrão */
+.col-xs { width: 50px;  max-width: 50px;  }
+.col-sm { width: 80px;  max-width: 80px;  }
+.col-md { width: 140px; max-width: 140px; }
+.col-lg { width: 220px; max-width: 220px; }
+.col-xl { width: 320px; max-width: 320px; }
+
+th[class^="col-"],
+td[  overflow: hidden;
+class^="col-"]{
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* status sempre centralizado */
+.col-status{
+  text-align: center;
+}
+
+</style>
+</head>
+<body>
+
+<header>
+  <img src="logo.png" alt="Logo (coloque logo.png na mesma pasta)" onerror="this.style.display='none'">
+  <div class="title">MOVIMENTAÇÃO DIÁRIA</div>
+  <div class="clock" id="clock">--:--</div>
+</header>
+
+<main>
+  <section class="card">
+    <h2>PAINEL</h2>
+    <div id="painel">Carregando...</div>
+  </section>
+
+  <section class="card">
+    <h2>AGENDA DO DIA</h2>
+    <div id="agenda">Carregando...</div>
+  </section>
+
+    <section class="card">
+    <h2>AGENDA SERVIÇO SOCIAL</h2>
+    <div id="social">Carregando...</div>
+  </section>
+</main>
+
+<div class="small">Atualização automática a cada 60s • Fonte: Google Sheets (GViz)</div>
+
+<script>
+/* ============================
+   CONFIG — coloque seu Sheet ID
+   ============================ */
+const SHEET_ID = "1Ch3AjQ0MDo4WuQWFDR3r8nZrHb4yQkSLOtT5_QgxT6E";
+
+/* nomes exatos das abas (case-sensitive) */
+const TAB_PAINEL = "PAINEL";
+const TAB_AGENDA = "AGENDA DO DIA";
+const TAB_SS = "AGENDA SERVIÇO SOCIAL";
+
+/* ============================
+   RELÓGIO (pt-BR)
+   ============================ */
+function updateClock(){
+  const n = new Date();
+  document.getElementById("clock").innerText =
+    n.toLocaleDateString("pt-BR") + " — " +
+    n.toLocaleTimeString("pt-BR");
+}
+setInterval(updateClock,1000);
+updateClock();
+
+/* ============================
+   Helpers: escape + parse gviz robusto
+   ============================ */
+function parseGvizText(text){
+  return JSON.parse(text.substring(text.indexOf("{"), text.lastIndexOf("}")+1));
+}
+function escapeHtml(s){
+  return String(s ?? "").replace(/[&<>]/g,m=>({ "&":"&amp;","<":"&lt;",">":"&gt;" }[m]));
+}
+/* ============================
+   Formatação robusta de célula
+   - trata Date(yyyy,mm,dd[,HH,MM,SS])
+   - trata TimeOfDay(H,M,S)
+   - trata ISO YYYY-MM-DD[T ]HH:MM:SS
+   - somenteHora flag: se true, retorna apenas HH:MM quando aplicável
+   ============================ */
+function formatCell(cell){
+  if (cell === null || cell === undefined) return "";
+
+  // objeto GViz
+  if (typeof cell === "object"){
+    if (cell.f !== undefined && cell.f !== null) return String(cell.f);
+    if (cell.v !== undefined && cell.v !== null) return formatCell(cell.v);
+    return "";
+  }
+
+  const s = String(cell).trim();
+
+  // Date(YYYY,MM,DD[,HH,MM,SS])
+  const d = s.match(/^Date\((\d+),(\d+),(\d+)(?:,(\d+),(\d+),?(\d+)?)?\)$/);
+  if (d){
+    const ano = +d[1];
+    const mes = +d[2] + 1;
+    const dia = +d[3];
+    const hh  = d[4] !== undefined ? +d[4] : null;
+    const mm  = d[5] !== undefined ? +d[5] : null;
+
+    // hora pura (Sheets usa 1899)
+    if (ano === 1899){
+      return `${String(hh).padStart(2,"0")}:${String(mm).padStart(2,"0")}`;
+    }
+
+    if (hh !== null){
+      return `${String(dia).padStart(2,"0")}/${String(mes).padStart(2,"0")}/${ano} ` +
+             `${String(hh).padStart(2,"0")}:${String(mm).padStart(2,"0")}`;
+    }
+
+    return `${String(dia).padStart(2,"0")}/${String(mes).padStart(2,"0")}/${ano}`;
+  }
+
+  return s;
+}
+
+   /* regras de largura por header
+{ match: /data|hora/i, cls: "col-sm" }
+{ match: /veiculo/i,  cls: "col-sm" }
+{ match: /itinerario/i, cls: "col-xl" }
+ */
+
+
+/* ============================
+   Render genérico
+   - aplica regra somenteHora para colunas cujo header inclua "hora"
+   - regra válida em PAINEL e AGENDA DO DIA (conforme sua solicitação)
+   - status styling (andamento, concluído, cancelado) para agendas e painel
+   ============================ */
+function renderTable(containerId, g){
+  const container = document.getElementById(containerId);
+
+  // 🔒 validação total do GViz
+  if (!g || !g.table || !Array.isArray(g.table.cols)){
+    container.innerHTML =
+      "<div style='text-align:center;opacity:.7'>Sem dados</div>";
+    return;
+  }
+
+  const cols = g.table.cols.map(c => c.label || "");
+  const rows = Array.isArray(g.table.rows) ? g.table.rows : [];
+
+  let html = "<table><thead><tr>";
+  cols.forEach(h => html += `<th>${escapeHtml(h)}</th>`);
+  html += "</tr></thead><tbody>";
+
+  rows.forEach(r => {
+    const cells = Array.isArray(r.c) ? r.c : [];
+
+    // status seguro
+    let statusText = "";
+    if (cells.length){
+      const last = cells[cells.length - 1];
+      statusText = String(last?.f ?? last?.v ?? "").toLowerCase();
+    }
+
+    let cls = "";
+if (statusText.includes("cancelado")) {
+  cls = "status-cancelado";
+}
+
+else if (statusText.includes("concluido")) {
+  cls = "status-concluido";
+}
+else if (statusText.includes("andamento")) {
+  cls = "status-andamento";
+}
+    else if (statusText.includes("atendido")) {
+  cls = "status-atendido";
+}
+
+
+    html += `<tr class="${cls}">`;
+
+for (let i = 0; i < cols.length; i++){
+  const isStatusCol = (i === cols.length - 1);
+  const raw = formatCell(cells[i]);
+  const txt = raw.toLowerCase();
+
+  if (isStatusCol){
+    // ATENDIDO / CONCLUÍDO → ✔
+    if (txt.includes("atendido") || txt.includes("concluido")){
+      html += `<td class="status-icon">✔</td>`;
+    }
+    // CANCELADO → ✖
+    else if (txt.includes("cancelado")){
+      html += `<td class="status-icon">✖</td>`;
+    }
+    // ANDAMENTO → ⏳
+    else if (txt.includes("andamento")){
+      html += `<td class="status-icon">⏳</td>`;
+    }
+    // fallback
+    else{
+      html += `<td>${escapeHtml(raw)}</td>`;
+    }
+  }
+  else{
+    html += `<td>${escapeHtml(raw)}</td>`;
+  }
+}
+
+      html += "</tr>";
+  });
+
+  html += "</tbody></table>";
+  container.innerHTML = html;
+}
+
+/* ============================
+   Fetch each sheet with nocache (robusto)
+   ============================ */
+async function fetchSheet(tab){
+  const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?sheet=${encodeURIComponent(tab)}&tqx=out:json&nocache=${Date.now()}`;
+  const r=await fetch(url,{cache:"no-store"});
+  return parseGvizText(await r.text());
+}
+
+/* ============================
+   Main loader
+   ============================ */
+  async function loadAll(){
+  try{
+    const [p,a,s,v] = await Promise.all([
+      fetchSheet(TAB_PAINEL),
+      fetchSheet(TAB_AGENDA),
+      fetchSheet(TAB_SS),
+    ]);
+
+    renderTable("painel", p);
+    renderTable("agenda", a);
+    renderTable("social", s);
+
+  } catch(err){
+    console.error("Erro ao carregar GViz:", err);
+  }
+}
+
+/* initial + interval */
+loadAll();
+setInterval(loadAll, 60000); // 60s
+</script>
+</body>
+</html>
