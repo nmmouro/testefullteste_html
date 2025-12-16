@@ -17,6 +17,7 @@
     --muted:#f7f9fa;
     --accent:#00eaff;
     --danger:#9b1111;
+    --cabeçalho:#0037ff;
   }
  
   html,body{
@@ -29,22 +30,24 @@
   
   header{
   display:flex;
-  justify-content:space-between;
+  justify-content:space-around;
   align-items:center;
   padding:12px 20px;
   background:#020617;
   border-bottom:1px solid rgba(255,255,255,0.03);
+    border-radius:10px;
   }
   
   header img{height:66px}
   header .title{font-size:20px;font-weight:700;color:var(--accent)}
   header .clock{font-size:20px; color:var(--muted)}
   
+  /*divisão das áreas*/
   main{
   padding:12px;
   display:grid;
   grid-template-rows:1fr 1fr 1fr;
-  gap:20px;
+  gap: 10px;
   height:calc(100vh - 80px);
   box-sizing:border-box;
   }
@@ -66,7 +69,8 @@
   table{
   width:100%;
   border-collapse:collapse;
-  font-size:14px;
+  table-layout: fixed;   /* 🔒 trava alinhamento */
+  position: relative;
   }
 
   th, td{
