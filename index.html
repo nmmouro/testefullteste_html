@@ -58,7 +58,8 @@
   padding:12px;
   overflow:auto;
   }
-  
+
+  /*título da aba*/
   .card h2{
   margin:0 0 8px;
   color:var(--accent);
@@ -88,6 +89,7 @@
   text-align: center;
 }
 
+  /* cabeçalho */
   thead th{
   position:sticky;
   top:0;
@@ -112,9 +114,10 @@ tr.status-concluido  td.status-icon{color:#7CFC00;}
   tr.status-atendido{background: rgba(147,219,112,0.18)}
   
   tr.status-concluido{background: rgba(0,200,120,0.06)}
-     
+
+  /*rodapé*/
   .small{
-  font-size:12px;
+  font-size:8px;
   color:var(--muted);
   text-align:center;
   margin-top:6px;
@@ -249,13 +252,6 @@ function formatCell(cell){
 
   return s;
 }
-
-   /* regras de largura por header
-{ match: /data|hora/i, cls: "col-sm" }
-{ match: /veiculo/i,  cls: "col-sm" }
-{ match: /itinerario/i, cls: "col-xl" }
- */
-
 
 /* ============================
    Render genérico
