@@ -27,7 +27,8 @@
   color:#fff;
   font-family:Inter,Arial;
   }
-  
+
+  /* ================= HEADER ================= */
   header{
   display:flex;
   justify-content:space-between;
@@ -42,7 +43,7 @@
   header .title{font-size:24px;font-weight:700;color:var(--accent)}
   header .clock{font-size:20px; color:var(--muted)}
   
-  /*divisão das áreas*/
+  /* ================= LAYOUT ================= */
   main{
   padding:12px;
   display:grid;
@@ -59,59 +60,63 @@
   overflow:auto;
   }
 
-  /*título da aba*/
+  /* ================= TÍTULOS ================= */
   .card h2{
   margin:1 1 8px;
   color:var(--accent);
   font-size:18px;
   text-align:center;
   }
-  
+
+  /* ================= TABELA ================= */
   table{
   width:100%;
   border-collapse:collapse;
   /*table-layout: fixed; */  /* 🔒 trava alinhamento */
-  /*position: relative;*/ 
     font-size:16px
   }
 
+  /* 🔹 CENTRALIZA TODO O TEXTO */
   th, td{
   padding: 12px 16px;
-  /*text-align:left;*/
+  text-align:center;
   white-space:nowrap;
   overflow:hidden;
   text-overflow:ellipsis;
     font-weight:700;
-  /*border-right: 1px solid rgba(255,255,255,0.12); */
+  vertical-align:middle;
   }
-   /* cabeçalho */
+  
+  /* ================= CABEÇALHO ================= */
   thead th{
   position:sticky;
   top:0;
   z-index:1000;
   background:#0435bf;
   padding: 10px;
+  text-align:center;
   }
   
   thead th:first-child{border-top-left-radius:12px}
   thead th:last-child{border-top-right-radius:12px}
-  
+
+  /* ================= ÚLTIMA COLUNA (STATUS) ================= */
   th:last-child,
   td:last-child{
   border-right: none;
   width: 50px;
   text-align: center;
 }
-
   
-  /* ícone atendido */
+  /* ================= STATUS ICON ================= */
   td.status-icon{
   text-align:center;
   font-size:20px;
   font-weight:bold;
-    vertical-align: middle; /* ✅ */
+  vertical-align: middle; /* ✅ */
 }
 
+ /* ================= CORES DE STATUS ================= */
 td.status-icon{text-align:center}
 tr.status-atendido   td.status-icon{color:#00ff9c;}
 tr.status-cancelado  td.status-icon{color:#ff4d4d;}
@@ -122,7 +127,7 @@ tr.status-andamento{background: rgba(219,147,112,0.18)}
 tr.status-atendido{background: rgba(147,219,112,0.18)}
 tr.status-concluido{background: rgba(0,200,120,0.06)}
 
-  /*rodapé*/
+  /* ================= RODAPÉ ================= */
   .small{
   font-size:12px;
   color:var(--muted);
@@ -136,20 +141,21 @@ table thead th {
   color: white;
 }
 
-      /* larguras padrão */
+/* ================= LARGURAS OPCIONAIS ================= */
 .col-xs { width: 50px;  max-width: 50px;  }
 .col-sm { width: 80px;  max-width: 80px;  }
 .col-md { width: 140px; max-width: 140px; }
 .col-lg { width: 220px; max-width: 220px; }
 .col-xl { width: 320px; max-width: 320px; }
 
+  /*
 th[class^="col-"],
 td[  overflow: hidden;
 class^="col-"]{
   white-space: nowrap;
   text-overflow: ellipsis;
 }
-
+*/
 /* status sempre centralizado */
 .col-status{
   text-align: center;
@@ -219,17 +225,9 @@ function parseGvizText(text){
 function escapeHtml(s){
   return String(s ?? "").replace(/[&<>]/g,m=>({ "&":"&amp;","<":"&lt;",">":"&gt;" }[m]));
 }
-/* ============================
-   Formatação robusta de célula
-   - trata Date(yyyy,mm,dd[,HH,MM,SS])
-   - trata TimeOfDay(H,M,S)
-   - trata ISO YYYY-MM-DD[T ]HH:MM:SS
-   - somenteHora flag: se true, retorna apenas HH:MM quando aplicável
-   ============================ */
+
 function formatCell(cell){
   if (cell === null || cell === undefined) return "";
-
-  // objeto GViz
   if (typeof cell === "object"){
     if (cell.f !== undefined && cell.f !== null) return String(cell.f);
     if (cell.v !== undefined && cell.v !== null) return formatCell(cell.v);
@@ -263,7 +261,7 @@ function formatCell(cell){
   return s;
 }
 
-/* ============================
+/*  ================= RENDER ================= 
    Render genérico
    - aplica regra somenteHora para colunas cujo header inclua "hora"
    - regra válida em PAINEL e AGENDA DO DIA (conforme sua solicitação)
@@ -288,8 +286,6 @@ function renderTable(containerId, g){
 
   rows.forEach(r => {
     const cells = Array.isArray(r.c) ? r.c : [];
-
-    // status seguro
     let statusText = "";
     if (cells.length){
       const last = cells[cells.length - 1];
@@ -300,7 +296,6 @@ function renderTable(containerId, g){
 if (statusText.includes("cancelado")) {
   cls = "status-cancelado";
 }
-
 else if (statusText.includes("concluido")) {
   cls = "status-concluido";
 }
@@ -310,7 +305,6 @@ else if (statusText.includes("andamento")) {
     else if (statusText.includes("atendido")) {
   cls = "status-atendido";
 }
-
 
     html += `<tr class="${cls}">`;
 
@@ -378,7 +372,6 @@ async function fetchSheet(tab){
   }
 }
 
-/* initial + interval */
 loadAll();
 setInterval(loadAll, 60000); // 60s
 </script>
