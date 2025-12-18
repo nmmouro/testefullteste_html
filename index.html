@@ -32,14 +32,14 @@
   display:flex;
   justify-content:space-around;
   align-items:center;
-  padding:12px 20px;
+  padding:12px 80px;
   background:#020617;
   border-bottom:1px solid rgba(255,255,255,0.03);
     border-radius:10px;
   }
   
   header img{height:66px}
-  header .title{font-size:20px;font-weight:700;color:var(--accent)}
+  header .title{font-size:24px;font-weight:700;color:var(--accent)}
   header .clock{font-size:20px; color:var(--muted)}
   
   /*divisão das áreas*/
@@ -48,7 +48,7 @@
   display:grid;
   grid-template-rows:1fr 1fr 1fr;
   gap: 10px;
-  height:calc(100vh - 80px);
+  height:calc(100vh - 92px);
   box-sizing:border-box;
   }
   
@@ -61,7 +61,7 @@
 
   /*título da aba*/
   .card h2{
-  margin:0 0 8px;
+  margin:1 1 8px;
   color:var(--accent);
   font-size:18px;
   text-align:center;
@@ -70,31 +70,39 @@
   table{
   width:100%;
   border-collapse:collapse;
-  table-layout: fixed;   /* 🔒 trava alinhamento */
-  position: relative;
+  /*table-layout: fixed; */  /* 🔒 trava alinhamento */
+  /*position: relative;*/ 
+    font-size:16px
   }
 
   th, td{
-  padding: 10px 50px;
-  text-align:left;
+  /*padding: 12px 16px;*/
+  /*text-align:left;*/
   white-space:nowrap;
   overflow:hidden;
   text-overflow:ellipsis;
-  border-right: 1px solid rgba(255,255,255,0.12);
+    font-weight:700;
+  /*border-right: 1px solid rgba(255,255,255,0.12); */
   }
-  th:last-child,
-  td:last-child{
-  border-right: none;
-  width: 50px;
-  text-align: center;
-}
-
-  /* cabeçalho */
+   /* cabeçalho */
   thead th{
   position:sticky;
   top:0;
-  background:rgba(255,255,255,0.02);
+  z-index:1000;
+  background:#0435bf;
+  padding: 10px;
   }
+  
+  thead th:first-child{border-top-left-radius:12px}
+  thead th:last-child{border-top-right-radius:12px}
+  
+  /*th:last-child,
+  td:last-child{9
+  border-right: none;
+  width: 50px;
+  text-align: center;
+}*/
+
   
   /* ícone atendido */
   td.status-icon{
@@ -103,21 +111,19 @@
   font-weight:bold;
 }
 
+td.status-icon{text-align:center}
 tr.status-atendido   td.status-icon{color:#00ff9c;}
 tr.status-cancelado  td.status-icon{color:#ff4d4d;}
 tr.status-andamento  td.status-icon{color:#ffcc00;}
 tr.status-concluido  td.status-icon{color:#7CFC00;}
 
-
-  tr.status-andamento{background: rgba(219,147,112,0.18)}
-
-  tr.status-atendido{background: rgba(147,219,112,0.18)}
-  
-  tr.status-concluido{background: rgba(0,200,120,0.06)}
+tr.status-andamento{background: rgba(219,147,112,0.18)}
+tr.status-atendido{background: rgba(147,219,112,0.18)}
+tr.status-concluido{background: rgba(0,200,120,0.06)}
 
   /*rodapé*/
   .small{
-  font-size:8px;
+  font-size:12px;
   color:var(--muted);
   text-align:center;
   margin-top:6px;
@@ -194,8 +200,7 @@ const TAB_SS = "AGENDA SERVIÇO SOCIAL";
 function updateClock(){
   const n = new Date();
   document.getElementById("clock").innerText =
-    n.toLocaleDateString("pt-BR") + " — " +
-    n.toLocaleTimeString("pt-BR");
+    n.toLocaleDateString("pt-BR") + " — " + n.toLocaleTimeString("pt-BR");
 }
 setInterval(updateClock,1000);
 updateClock();
